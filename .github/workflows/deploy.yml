@@ -71,6 +71,11 @@ jobs:
             --exclude='/.git/' \
             --exclude='/.github/' \
             --exclude='/deploy_bundle/' \
+            --exclude='.browserslistrc' \
+            --exclude='.gitignore' \
+            --exclude='.node-version' \
+            --exclude='.npmrc' \
+            --exclude='.nvmrc' \
             --exclude='*.yml' \
             --exclude='*.yaml' \
             ./ deploy_bundle/

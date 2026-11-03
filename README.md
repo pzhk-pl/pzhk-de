@@ -101,6 +101,7 @@ Polecenie wykonuje kolejno:
    `page-trigger.yml` do `dist/.github/workflows/`.
 3. `gh-pages -d dist -b page --dotfiles` publikuje zawartość `dist/` do gałęzi
    `page` repozytorium `origin`. Opcja `--dotfiles` uwzględnia katalog `.github/`.
+   Opcja `--remove "{.,.browserslistrc,.gitignore,.node-version,.npmrc,.nvmrc}"` usuwa także stare pliki konfiguracji z gałęzi `page`.
 4. Push do `page` uruchamia workflow `Publish website on page push`.
 5. Workflow wywołuje `pzhk-pl/pzhk-de/.github/workflows/deploy.yml@master`,
    przekazując SHA opublikowanego commita. Wdrożenie pobiera ten commit
@@ -142,7 +143,10 @@ do repozytorium i gałęzi zawierających współdzielony workflow.
 Workflow przygotowuje paczkę z plików gałęzi `page`, pomijając `.git/`,
 `.github/`, `deploy_bundle/` oraz pliki `*.yml` i `*.yaml`. Sprawdza obecność
 `index.html`, a następnie przesyła paczkę za pomocą `lftp mirror -R`.
-Obecna konfiguracja nie usuwa z serwera plików nieobecnych w paczce.
+Paczka pomija także `.browserslistrc`, `.gitignore`, `.node-version`, `.npmrc`
+i `.nvmrc`. Po udanym przesłaniu workflow usuwa z katalogu docelowego na serwerze
+wcześniejsze kopie tych pięciu plików. Pozostałe pliki nieobecne w paczce pozostają
+na serwerze.
 
 Po `npm run deploy` sprawdź wynik workflow w zakładce **Actions**,
 a następnie otwórz stronę na serwerze i zweryfikuj treść oraz ładowanie zasobów.

@@ -14,7 +14,7 @@
     "watch": "gulp",
     "build": "gulp build",
     "predeploy": "npm run build",
-    "deploy": "node scripts/prepare-page.cjs && gh-pages -d dist -b page --dotfiles"
+    "deploy": "node scripts/prepare-page.cjs && gh-pages -d dist -b page --dotfiles --remove \"{.,.browserslistrc,.gitignore,.node-version,.npmrc,.nvmrc}\""
   },
   "repository": {
     "type": "git",

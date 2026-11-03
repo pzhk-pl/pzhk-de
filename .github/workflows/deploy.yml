@@ -104,5 +104,8 @@ jobs:
               mirror -R --verbose --parallel=2 \
                 deploy_bundle $SFTP_TARGET;
 
+              cd $SFTP_TARGET;
+              rm -f .browserslistrc .gitignore .node-version .npmrc .nvmrc;
+
               bye;
             "

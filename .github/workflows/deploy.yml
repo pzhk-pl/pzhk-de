@@ -1,0 +1,103 @@
+
+name: Deploy website via SFTP
+
+on:
+  workflow_call:
+    inputs:
+      page_sha:
+        required: true
+        type: string
+    secrets:
+      SFTP_HOST:
+        required: true
+      SFTP_USERNAME:
+        required: true
+      SFTP_PASSWORD:
+        required: true
+      SFTP_PORT:
+        required: true
+      SFTP_TARGET:
+        required: true
+      SFTP_KNOWN_HOSTS:
+        required: true
+
+permissions:
+  contents: read
+
+jobs:
+  deploy:
+    name: Upload website to production server
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout page
+        uses: actions/checkout@v6
+        with:
+          ref: ${{ inputs.page_sha }}
+          persist-credentials: false
+
+      - name: Install lftp
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y lftp
+
+      - name: Configure SSH host verification
+        env:
+          HOST_KEYS: ${{ secrets.SFTP_KNOWN_HOSTS }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          mkdir -p "$HOME/.ssh"
+          chmod 700 "$HOME/.ssh"
+
+          printf '%s\n' "$HOST_KEYS" > "$HOME/.ssh/known_hosts"
+          chmod 600 "$HOME/.ssh/known_hosts"
+
+          cat > "$HOME/.ssh/config" <<'EOF'
+          Host *
+            StrictHostKeyChecking yes
+            UserKnownHostsFile ~/.ssh/known_hosts
+            BatchMode no
+          EOF
+
+          chmod 600 "$HOME/.ssh/config"
+
+      - name: Prepare deployment files
+        run: |
+          mkdir -p deploy_bundle
+
+          rsync -a \
+            --exclude='/.git/' \
+            --exclude='/.github/' \
+            --exclude='/deploy_bundle/' \
+            --exclude='*.yml' \
+            --exclude='*.yaml' \
+            ./ deploy_bundle/
+
+          test -f deploy_bundle/index.html
+
+      - name: Deploy via SFTP
+        env:
+          SFTP_HOST: ${{ secrets.SFTP_HOST }}
+          SFTP_USERNAME: ${{ secrets.SFTP_USERNAME }}
+          SFTP_PASSWORD: ${{ secrets.SFTP_PASSWORD }}
+          SFTP_PORT: ${{ secrets.SFTP_PORT }}
+          SFTP_TARGET: ${{ secrets.SFTP_TARGET }}
+        shell: bash
+        run: |
+          set -euo pipefail
+
+          lftp \
+            -u "$SFTP_USERNAME,$SFTP_PASSWORD" \
+            "sftp://$SFTP_HOST:$SFTP_PORT" \
+            -e "
+              set cmd:fail-exit yes;
+              set net:max-retries 2;
+              set net:timeout 20;
+
+              mirror -R --verbose --parallel=2 \
+                deploy_bundle $SFTP_TARGET;
+
+              bye;
+            "

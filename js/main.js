@@ -1,0 +1,1 @@
+!function(){"use strict";console.log("Hej, nazywam się Kasia Izak i jestem autorką tej strony.\nFajnie, że nie boisz się zaglądać do konsoli! ;-)")}();

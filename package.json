@@ -14,7 +14,7 @@
     "watch": "gulp",
     "build": "gulp build",
     "predeploy": "npm run build",
-    "deploy": "gh-pages -d dist"
+    "deploy": "node scripts/prepare-page.cjs && gh-pages -d dist -b page --dotfiles"
   },
   "repository": {
     "type": "git",
